@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<base target="_top">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Corruption VS LGBTQ+ Welfare</title>
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+	</style>
+
+    <style>#map { width: 100%; height: 100vh; }
+.info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+.legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script type="text/javascript" src="european-countries.js"></script>
+
+<script type="text/javascript">
+
+	const map = L.map('map').setView([55, 20], 4);
+
+	const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+
+	// get color depending on population safety value
+	function getColor(d) {
+		return d > 90 ? '#006837' :
+			d > 90  ? '#1A9850' :
+			d > 70  ? '#66BD63' :
+			d > 60  ? '#A6D96A' :
+			d > 50  ? '#D9EF8B' :
+			d > 40  ? '#FEE08B' :
+			d > 30   ? '#FDAE61' :
+			d > 20   ? '#F46D43' :
+			d > 10   ? '#D73027' : '#A50026';
+	}
+
+	function style(feature) {
+		return {
+			weight: 2,
+			opacity: 1,
+			color: 'white',
+			dashArray: '3',
+			fillOpacity: 0.7,
+			fillColor: getColor(feature.properties.welfare_corruption_score)
+		};
+	}
+
+	function highlightFeature(e) {
+		const layer = e.target;
+
+		layer.setStyle({
+			weight: 5,
+			color: '#666',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+
+		layer.bringToFront();
+	}
+
+	/* global countries */
+	const geojson = L.geoJson(countries, {
+		style,
+		onEachFeature
+	}).addTo(map);
+
+	function resetHighlight(e) {
+		geojson.resetStyle(e.target);
+	}
+
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
+	function onEachFeature(feature, layer) {
+		const contents = `<h4>${feature.properties.name}</h4><table><tr><td>ILGA Welfare:</td><td>${feature.properties.ilga_safety}</td><tr><td>Corruption Perception Index:</td><td>${feature.properties.cpi_corruption}</td></tr><tr><td>Welfare/Corruption Score</td><td>${feature.properties.welfare_corruption_score}</td></tr></table>`
+		layer.bindPopup(contents);
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlight
+		});
+	}
+
+	map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+
+
+	const legend = L.control({position: 'bottomright'});
+
+	legend.onAdd = function (map) {
+
+		const div = L.DomUtil.create('div', 'info legend');
+		const grades = [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
+		const labels = [];
+		let from, to;
+
+		for (let i = 0; i < grades.length - 1; i++) {
+			from = grades[i];
+			to = grades[i + 1];
+
+			labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+		}
+
+		div.innerHTML = labels.join('<br>');
+		return div;
+	};
+
+	legend.addTo(map);
+
+</script>
+
+
+
+</body>
+</html>
+
