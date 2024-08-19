@@ -91,7 +91,7 @@
 	}
 
 	function onEachFeature(feature, layer) {
-		const contents = `<h4>${feature.properties.name}</h4><table><tr><td>ILGA Welfare:</td><td>${feature.properties.ilga_safety}</td><tr><td>Corruption Perception Index:</td><td>${feature.properties.cpi_corruption}</td></tr><tr><td>Welfare/Corruption Score</td><td>${feature.properties.welfare_corruption_score}</td></tr></table>`
+		const contents = `<h4>${feature.properties.name}</h4><table><tr><td>ILGA Welfare:</td><td>${feature.properties.ilga_safety}</td><tr><td>Corruption Perception Index:</td><td>${feature.properties.cpi_corruption}</td></tr><tr><td>Queer Justice Index</td><td>${feature.properties.welfare_corruption_score}</td></tr></table>`
 		layer.bindPopup(contents);
 		layer.on({
 			mouseover: highlightFeature,
